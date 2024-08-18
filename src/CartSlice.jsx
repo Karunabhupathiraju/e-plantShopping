@@ -1,43 +1,48 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-export const CartSlice = createSlice({
+const cartSlice = createSlice({
   name: 'cart',
   initialState: {
-    items: [], // Initialize items as an empty array
+    items: [], // Array to hold cart items
   },
   reducers: {
-    // Reducer to add an item to the cart
+    // Add an item to the cart
     addItem: (state, action) => {
-      const item = action.payload;
-      const existingItem = state.items.find((i) => i.name === item.name);
-
+      const existingItem = state.items.find(item => item.id === action.payload.id);
       if (existingItem) {
+        // If item already exists, increment the quantity
         existingItem.quantity += 1;
       } else {
-        state.items.push({ ...item, quantity: 1 });
+        // Otherwise, add the new item with a quantity of 1
+        state.items.push({ ...action.payload, quantity: 1 });
       }
     },
-
-    // Reducer to remove an item from the cart
-    removeItem: (state, action) => {
-      const itemName = action.payload;
-      state.items = state.items.filter((item) => item.name !== itemName);
-    },
-
-    // Reducer to update the quantity of an item in the cart
+    // Update the quantity of an existing item in the cart
     updateQuantity: (state, action) => {
-      const { name, quantity } = action.payload;
-      const existingItem = state.items.find((item) => item.name === name);
-
+      const { id, quantity } = action.payload;
+      const existingItem = state.items.find(item => item.id === id);
       if (existingItem) {
         existingItem.quantity = quantity;
+        if (existingItem.quantity <= 0) {
+          // If quantity is zero or less, remove the item
+          state.items = state.items.filter(item => item.id !== id);
+        }
       }
+    },
+    // Remove an item from the cart
+    removeItem: (state, action) => {
+      const { id } = action.payload;
+      state.items = state.items.filter(item => item.id !== id);
+    },
+    // Clear all items from the cart
+    clearCart: (state) => {
+      state.items = [];
     },
   },
 });
 
-// Exporting the action creators
-export const { addItem, removeItem, updateQuantity } = CartSlice.actions;
+// Export the actions to be used in components
+export const { addItem, updateQuantity, removeItem, clearCart } = cartSlice.actions;
 
-// Exporting the reducer as the default export
-export default CartSlice.reducer;
+// Export the reducer to be added to the store
+export default cartSlice.reducer;
